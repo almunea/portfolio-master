@@ -504,9 +504,16 @@ function updatePositions() {
   window.performance.mark("mark_start_frame");
 
   var items = document.querySelectorAll('.mover');
+   // get the scroll value once rather than 200 times in the loop
+  var visibleHeight = window.innerHeight;
+  var visibleWidth = window.innerWidth;
+  var scroll = document.body.scrollTop / 1250;
   for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
-    items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
+    var phase = Math.sin(scroll + (i % 5));
+    // Calculate X to use for  translateX
+    var posX = Math.floor(100 * phase);
+    // Apply the TransformX + posX to the element[i]
+    items[i].style.webkitTransform = 'translateX(' + posX + 'px)';
   }
 
   // User Timing API to the rescue again. Seriously, it's worth learning.
@@ -524,16 +531,27 @@ window.addEventListener('scroll', updatePositions);
 
 // Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function() {
-  var cols = 8;
+  // only have pizzas on the visible screen, so we need the visible size
+  var visibleHeight = window.innerHeight;
+  var visibleWidth = window.innerWidth;
   var s = 256;
+  // Number of cols based on what is visible.
+  var cols = Math.floor(visibleWidth/s)+1;
+  // Number of rows based on what is visible.
+  var rows = Math.floor(visibleHeight/s)+1;
+  // Number of pizzas based on cols and rows
+  var pizzas = cols * rows;
+  // Defined elem before loop
   var elem;
-  for (var i = 0; i < 200; i++) {
+    for (var i = 0; i < 200; i++) {
     elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
     elem.basicLeft = (i % cols) * s;
+    // add calculated style.left that will remain unchanged
+    elem.style.left = Math.floor(elem.basicLeft + 100 * (Math.sin(i % 6))) + 'px';
     elem.style.top = (Math.floor(i / cols) * s) + 'px';
     document.querySelector("#movingPizzas1").appendChild(elem);
   }
